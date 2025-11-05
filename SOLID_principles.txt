@@ -1,0 +1,131 @@
+Single Responsibility Principle (SRP)
+Open-Closed Principle (OCP)
+Liskov Substitution Principle (LSP)
+Interface Segregation Principle (ISP)
+Dependency Inversion Principle (DIP)
+
+==================================
+SRP
+
+A type must have only one responsibility
+
+var entryCount = 0
+type Journal struct {
+    entries []string
+}
+
+func (j *Journal) AddEntry(text string) int {
+    entryCount++
+    entry := fmt.Sprintf("%d: %s", entryCount, text)
+    j.entries = append(j.entries, entry)
+    return entryCount
+}
+
+func (j *Journal) RemoveEntry(index int) {
+    // ...
+}
+
+func (j *Journal) String() string {
+    return strings.Join(j.entries, "\n")
+}
+
+// Separation Of Concerns
+// God Object
+func (j *Journal) Save(filename string) {
+    _ = ioutilWriteFile(filename, []byte(j.String()))
+}
+
+func (j *Journal) Load(filename string) {
+    // .. 
+}
+
+// You dont want to have persistence methods within the class
+// You would do it like this, if needed
+type PErsistence strunct {
+    lineSeparator string
+}
+
+func (p *persistence) SaveToFile(j *Journal, filename string) {
+    _ = ioutil.WriteFile(filename, []byte(strings.Join(j.entries, p.lineSeparator)), 0644)
+}
+
+func main() {
+    j := Journal{}
+    j.AddEntry("I cried today")
+    j.AddEntry("I ate a bug")
+
+    // 
+    SaveToFile(&j, "journal.txt")
+    
+    //
+    p := Persistence{"\r\n"}
+    p.SaveToFile(&j, "journal.txt")
+}
+
+==================================
+
+Open-Closed Principle (OCP)
+
+// open for extension, closed for modification
+type color int
+
+const (
+    red Color = iota
+    green
+    blue
+)
+
+type Size int
+
+const (
+    small Size = iota
+    medium
+    large
+)
+
+type Product strunct {
+    names string
+    color color
+    size Size
+}
+
+type Filter struct {
+    // ..
+}
+
+func (f *Filter) FilterByColor(products []Product, color Color) []*=Product {
+    result := make([]*Product, 0)
+    
+    for i, v := range products {
+        if v.color == color {
+            result = append(result, &products[i])
+        }
+    }
+
+    return result
+}
+
+// If we want to add another filter, we need to add a new method that does it and extend the set up, instead of adding code to the already tested and implemented methods
+// You create a specification interface
+type Specification interface {
+    IsSatisfied(p *Product) bool
+}
+
+type ColorSpecification struct {
+    color Color
+}
+func (c ColorSpecification) IsSatisfied(p *Product) bool {
+    return p.color == c.color
+}
+func main() {
+    apple := Product("Apple", green, small)
+    tree := Product("Tree", green, large)
+    house := Product("House", blue, large)
+
+    products := []Product{apple, tree, house}
+    fmt.Printf("Green products (old):\n")
+    f := Filter{}
+    for _, v := range f.FilterByColor(products, green) {
+        fmt.Printf(" - %s is green\n", v.name)
+    }
+}
